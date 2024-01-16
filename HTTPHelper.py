@@ -60,7 +60,8 @@ class HTTPHelper:
             try:
                 # Constructing the curl command
                 curl_command = f"curl -m 5 'http://api.ipapi.com/api/{ip}?access_key=762f03e6b5ba38cff2fb5d876eb7860f&hostname=1'"
-                curl_result = subprocess.run(curl_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                curl_result = subprocess.run(
+                    curl_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
                 if curl_result.returncode != 0:
                     # Curl command failed
@@ -80,7 +81,7 @@ class HTTPHelper:
 
         except subprocess.CalledProcessError as e:
             self.__log(f"WHOIS command failed: {e}")
-            return {"error": "WHOIS command failed"}
+            return {"error": f"WHOIS command failed{e}"}
 
         except Exception as e:
             self.__log(f"Unexpected error: {e}")
@@ -112,10 +113,12 @@ def _json_response(body: dict = "", **kwargs) -> web.Response:
     kwargs["content_type"] = "text/json"
     return web.Response(**kwargs)
 
+
 @ROUTES.get("/lookup")
 async def query_message(request: web.Request) -> web.Response:
     result = await (request.app["MANAGER"])._check_file_content(request.query["path"])
     return _json_response(result)
+
 
 @ROUTES.get("/ip/{value}")
 async def get_log(request: web.Request) -> web.Response:
@@ -134,6 +137,7 @@ def run():
     app.add_routes(ROUTES)
     app["MANAGER"] = HTTPHelper()
     web.run_app(app, port=7001)
+
 
 if __name__ == "__main__":
     run()
