@@ -53,24 +53,35 @@ class HTTPHelper:
 
     def get_ip_info(self, ip):
         try:
+            # Running the 'whois' command
             output = subprocess.check_output(["whois", ip])
             output_str = output.decode("utf-8")
+
             try:
-                response = requests.get(f"http://api.ipapi.com/api/{ip}?access_key=762f03e6b5ba38cff2fb5d876eb7860f&hostname=1", timeout=5)
-                response_json = response.json()
+                # Constructing the curl command
+                curl_command = f"curl -m 5 'http://api.ipapi.com/api/{ip}?access_key=762f03e6b5ba38cff2fb5d876eb7860f&hostname=1'"
+                curl_result = subprocess.run(curl_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+                if curl_result.returncode != 0:
+                    # Curl command failed
+                    self.__log(f"Curl error: {curl_result.stderr}")
+                    return {"error": curl_result.stderr}
+
+                # Parsing the response JSON
+                response_json = json.loads(curl_result.stdout)
                 response_json["whois"] = output_str
 
-                if response.status_code == 200:
-                    return response_json
-                else:
-                    self.__log(f"Non-200 status code: {response.status_code}")
-                    return response_json
-            except requests.exceptions.RequestException as req_err:
-                self.__log(f"Request error: {req_err}")
-                return {"error": str(req_err)}
+                # Returning the response JSON
+                return response_json
+
+            except subprocess.CalledProcessError as e:
+                self.__log(f"Curl command failed: {e}")
+                return {"error": "Curl command failed"}
+
         except subprocess.CalledProcessError as e:
             self.__log(f"WHOIS command failed: {e}")
             return {"error": "WHOIS command failed"}
+
         except Exception as e:
             self.__log(f"Unexpected error: {e}")
             return {"error": "Unexpected error"}
