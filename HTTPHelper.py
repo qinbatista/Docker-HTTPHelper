@@ -55,17 +55,25 @@ class HTTPHelper:
         try:
             output = subprocess.check_output(["whois", ip])
             output_str = output.decode("utf-8")
-            response = requests.get(f"http://api.ipapi.comsss/api/{ip}?access_key=762f03e6b5ba38cff2fb5d876eb7860f&hostname=1", timeout=5).json()
-            self.__log(f"response:{response}")
-            del response["location"]
-            response["whois"] = output_str
-            if response.status_code == 200:
-                return response
-            else:
-                return response
-        except:
-            self.__log(f"error response:{response}")
-            return response
+            try:
+                response = requests.get(f"http://api.ipapi.com/api/{ip}?access_key=762f03e6b5ba38cff2fb5d876eb7860f&hostname=1", timeout=5)
+                response_json = response.json()
+                response_json["whois"] = output_str
+
+                if response.status_code == 200:
+                    return response_json
+                else:
+                    self.__log(f"Non-200 status code: {response.status_code}")
+                    return response_json
+            except requests.exceptions.RequestException as req_err:
+                self.__log(f"Request error: {req_err}")
+                return {"error": str(req_err)}
+        except subprocess.CalledProcessError as e:
+            self.__log(f"WHOIS command failed: {e}")
+            return {"error": "WHOIS command failed"}
+        except Exception as e:
+            self.__log(f"Unexpected error: {e}")
+            return {"error": "Unexpected error"}
 
     def __log(self, result):
         with open(self.__file_path, "a+") as f:
