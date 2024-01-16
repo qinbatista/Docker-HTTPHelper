@@ -55,7 +55,7 @@ class HTTPHelper:
         try:
             output = subprocess.check_output(["whois", ip])
             output_str = output.decode("utf-8")
-            response = requests.get(f"http://api.ipapi.com/api/{ip}?access_key=762f03e6b5ba38cff2fb5d876eb7860f&hostname=1", timeout=5).json()
+            response = requests.get(f"http://api.ipapi.comsss/api/{ip}?access_key=762f03e6b5ba38cff2fb5d876eb7860f&hostname=1", timeout=5).json()
             self.__log(f"response:{response}")
             del response["location"]
             response["whois"] = output_str
