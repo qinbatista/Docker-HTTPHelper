@@ -54,7 +54,7 @@ class HTTPHelper:
     def get_ip_info(self, ip):
         try:
             # Running the 'whois' command
-            output = subprocess.check_output(["whois", ip])
+            output = subprocess.check_output(["whois", ip],timeout=3)
             output_str = output.decode("utf-8")
 
             try:
