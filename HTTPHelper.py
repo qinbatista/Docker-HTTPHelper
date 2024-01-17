@@ -1,12 +1,10 @@
 import json
 from aiohttp import web
-import platform
 import os
 import socket
 import re
-import requests
 import subprocess
-
+import whois
 
 class HTTPHelper:
     def __init__(self, worlds=[]):
@@ -54,8 +52,8 @@ class HTTPHelper:
     def get_ip_info(self, ip):
         try:
             # Running the 'whois' command
-            output = subprocess.check_output(["whois", ip],timeout=3)
-            output_str = output.decode("utf-8")
+            w = whois.whois(ip)
+            whois_info = str(w)
 
             try:
                 # Constructing the curl command
@@ -70,7 +68,7 @@ class HTTPHelper:
 
                 # Parsing the response JSON
                 response_json = json.loads(curl_result.stdout)
-                response_json["whois"] = output_str
+                response_json["whois"] = whois_info
 
                 # Returning the response JSON
                 return response_json
